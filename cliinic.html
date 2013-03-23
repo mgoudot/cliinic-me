@@ -54,9 +54,7 @@
 
    				<div class="interaction-panel span8 newPatient">
    					{{#if currentUser}}
-
-			    		{{>newPatient}}
-			    		
+			    		{{>newPatient}}	
 			    	{{/if}}
 
 		    	</div>
@@ -165,8 +163,7 @@
 			       	<p>{{>investigation}}</p>
 			     {{/each}}
 			</div>
-			<a class="btn test">Let's try these tests</a>
-		    <a class="btn btn-primary next">That should be all, {{patient.name}}.</a>
+		    <a class="btn btn-primary next test">That should be all, {{patient.name}}.</a>
 	</div>
 </template>
 
