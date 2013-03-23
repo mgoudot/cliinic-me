@@ -106,31 +106,44 @@
 </template>
 
 <template name='newPatient'>
+
+		<img class='moa' src='/moa.png'>
+
 	{{#if patient}}
 	  	{{#if session 'arrivalStage'}} 
-		<a class="newPatient" id="{{patient.id}}" href="#">Arriving patient : {{patient.name}}</a>
+		<a class="newPatient" id="{{patient.id}}" href="#"><img class="arrival" src='/{{patient.name}}.png'></a>
+		{{/if}}
+
+		{{#if session 'greetingStage'}}
+		<img class="arrival" src='/{{patient.name}}.png'>
 		{{/if}}
 
 		{{#if session 'testsStage'}} 
-		<a href="#" class="testPatient" id="{{patient.id}}">Investigate on {{patient.name}}</a>
+		<a href="#" class="testPatient" id="{{patient.id}}"><img class='bed' src='/{{patient.name}}Bed.png'></a>
+		{{/if}}
+
+		{{#if session 'waitResultsStage'}} 
+		<img class="bed" src='/{{patient.name}}Bed.png'>
+		<a href='#'class="newPatient" id="{{patient.id}}"><img class=results src='/results.png'></a>
 		{{/if}}
 
 	  	{{#if session 'resultsStage'}} 
-		<a role="button" class="btn-small newPatient">
-		<p class="newPatient" id="{{patient.id}}">Find out results : {{patient.name}}</p>
-		</a>
+		<img class="bed" src='/{{patient.name}}Bed.png'>
+		<a class="newPatient" id="{{patient.id}}"><img class="results" src='/results.png'></a>
+		{{/if}}
+
+		{{#if session 'waitDiagnosisStage'}}
+		<img class="bed" src='/{{patient.name}}Bed.png'>
+		<a href='#'class="newPatient" id="{{patient.id}}"><img class="diag" src='/diag.png'></a>
 		{{/if}}
 
 	  	{{#if session 'diagnosesStage'}} 
-		<a role="button" class="btn-small newPatient">
-		<p class="newPatient" id="{{patient.id}}">Offer a diagnosis patient : {{patient.name}}</p>
-		</a>
+	  	<img class="bed" src='/{{patient.name}}Bed.png'>
+	  	<img class="diag" src='/diag.png'>
 		{{/if}}
 
 	  	{{#if session 'successStage'}} 
-		<a role="button" class="btn-small newPatient">
-		<p class="newPatient" id="{{patient.id}}">Success patient : {{patient.name}}</p>
-		</a>
+		<img class="arrival" src='/{{patient.name}}Cured.png'>
 		{{/if}}
 
 	{{/if}}

@@ -24,3 +24,37 @@
 	-webkit-column-gap: 1em;
 	margin-bottom:1em;
 }
+
+.game-background {
+	position:relative;
+}
+
+img.arrival {
+	position:absolute;
+	top:150px;
+	left:100px;
+}
+
+img.bed {
+	position:absolute;
+	top:49px;
+	left:500px;
+}
+
+img.moa {
+	position:absolute;
+	top:36px;
+	left:100px;
+}
+
+img.results {
+	position:absolute;
+	top:135px;
+	left:150px;
+}
+
+img.diag {
+	position:absolute;
+	top:46px;
+	left:535px;
+}

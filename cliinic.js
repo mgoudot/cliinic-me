@@ -28,13 +28,15 @@ var stage = 0;
 Session.set('arrivalStage', true)
 Session.set('greetingStage', false);
 Session.set('testsStage', false);
+Session.set('waitResultsStage', false)
 Session.set('resultsStage', false)
+Session.set('waitDiagnosisStage', false)
 Session.set('diagnosesStage', false);
 Session.set('successStage', false);
 Session.set('error', null);
 
 var setStage = function (i) {
-  stageArray = ['arrivalStage','greetingStage', 'testsStage','resultsStage','diagnosesStage','successStage']
+  stageArray = ['arrivalStage','greetingStage', 'testsStage', 'waitResultsStage','resultsStage', 'waitDiagnosisStage', 'diagnosesStage','successStage']
   for (var k = 0; k<stageArray.length;k++){
     Session.set(stageArray[k], false);
   }
@@ -208,7 +210,7 @@ var setStage = function (i) {
   Template.investigation.events({
     'click label.checkbox' : function () {
       if ($(":checkbox:checked").length >2){
-        console.log("hello") // rest not working anymore don't now why
+        console.log("hello") // rest not working anymore don't know why
         $('a[class="btn btn-primary next"]').addClass("disabled");
         $('a[class="btn btn-primary next disabled"]').removeClass("disabled");
       }
