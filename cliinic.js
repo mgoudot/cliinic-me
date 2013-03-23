@@ -34,7 +34,7 @@ Session.set('successStage', false);
 Session.set('error', null);
 
 var setStage = function (i) {
-  stageArray = ['arrivalStage','greetingStage', 'testsStage','resultsStage','diagnosesStage','succesStage']
+  stageArray = ['arrivalStage','greetingStage', 'testsStage','resultsStage','diagnosesStage','successStage']
   for (var k = 0; k<stageArray.length;k++){
     Session.set(stageArray[k], false);
   }

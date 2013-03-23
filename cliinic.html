@@ -128,7 +128,7 @@
 		{{/if}}
 
 	  	{{#if session 'successStage'}} 
-		<a href="#sucess" role="button" class="btn-small newPatient">
+		<a role="button" class="btn-small newPatient">
 		<p class="newPatient" id="{{patient.id}}">Success patient : {{patient.name}}</p>
 		</a>
 		{{/if}}
@@ -188,6 +188,7 @@
 
 <template name="successPanel">
 	<p>How's {{patient.name}} now?</p>
+	<p>{{patient.case.0.success}}</p>
 		    <a class="btn btn-primary next">Yay!</a>
 </template>
 
@@ -196,7 +197,6 @@
     	<p>{{>results}}</p>
     {{/if}}
 </template>
-
 
 
 <template name="results"> 
