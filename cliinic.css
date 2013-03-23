@@ -1,0 +1,26 @@
+/* CSS declarations go here */
+.game-background {
+	background-image:url("/background.png");
+  	min-height: 460px;
+  	min-width: 580px;
+}
+
+.interactionPanel {
+	float:center;
+	margin-left: auto;
+	margin-right: auto;
+	overflow:scroll;
+	padding : 20px;
+	margin-top:80px;
+	width:600px;
+	min-height:300px;
+	border:1px;
+}
+
+.multicolumn {
+	-moz-column-width: 15em; 
+	-webkit-column-width: 15em; 
+	-moz-column-gap: 1em; 
+	-webkit-column-gap: 1em;
+	margin-bottom:1em;
+}

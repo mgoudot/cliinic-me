@@ -1,0 +1,217 @@
+<head>
+  <title>cliinic</title>
+</head>
+
+<body>
+	   <div class="navbar">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="brand" href="">Cliinic.me </a>
+                <ul class="nav">
+                    <li><a href="">Home</a></li>
+                    <li><a href="#">Profile</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact us</a></li>
+
+                </ul>
+                <!-- The login -->
+                <p class="navbar-text pull-right" href="#">{{loginButtons align="right"}}</p>
+            </div>
+        </div>
+    </div>
+
+<div class="container">
+    <div class="row">
+
+    <div class="span2">
+
+	    <ul class="thumbnails">
+		  	<li class="span2">
+		    	<div class="thumbnail">
+		      		<img src='avatar.png' alt="">
+		      	<h4>Dr. F. Gordon</h4>
+		    </div>
+		  	</li>
+	  	</ul>
+
+		<button class="btn btn-large btn-block btn-primary" type="button"><i class="icon-home"></i> my Clinic</button>
+		<button class="btn btn-large btn-block" type="button"><i class="icon-user"></i> Patients</button>
+		<button class="btn btn-large btn-block" type="button"><i class="icon-globe"></i> Community</button>
+
+    </div>
+
+    <div class="span10">
+    	<div class="game-background">
+
+		    	<div class="navbar">
+			    	  <div class="navbar-inner">
+		    			<ul class="nav">
+			      			<li><a href="#">Vancouver</a></li>
+			      			<li><a href="#">Rep : {{currentUser.profile.reputation}}</a></li>
+			      			<li><a href="#">XP : {{currentUser.profile.xp}}</a></li>
+		    				</ul>
+			        </div>
+
+   				<div class="interaction-panel span8 newPatient">
+   					{{#if currentUser}}
+
+			    		{{>newPatient}}
+			    		
+			    	{{/if}}
+
+		    	</div>
+
+	        	</div>
+     	</div>
+    </div>
+
+
+  		<p></p>
+   		<div class="span2">
+	   		<ul class="thumbnails">
+			  	<li>
+			    	<div class="thumbnail">
+			      		<img src='patient.png' alt="">
+			    </div>
+			  	</li>
+		  	</ul>
+		</div>
+	  	<div class="span8 feed">
+	  		{{> feed}}
+	  	</div>
+   	</div>
+
+
+    </div>
+</div>
+
+</body>
+
+<template name='feed'>
+	{{#if session 'greetingStage'}} 
+		<p>{{> greetingsPanel}}</p>
+	{{/if}}
+	{{#if session 'testsStage'}} 
+		<p>{{> testsPanel}}</p>
+	{{/if}}
+	{{#if session 'resultsStage'}} 
+		<p>{{> resultsPanel}}</p>
+	{{/if}}
+	{{#if session 'diagnosesStage'}} 
+		<p>{{> diagnosesPanel}}</p>
+	{{/if}}
+	{{#if session 'successStage'}} 
+		<p>{{> successPanel}}</p>
+	{{/if}}
+</template>
+
+<template name='newPatient'>
+	{{#if patient}}
+	  	{{#if session 'arrivalStage'}} 
+		<a class="newPatient" id="{{patient.id}}" href="#">Arriving patient : {{patient.name}}</a>
+		{{/if}}
+
+		{{#if session 'testsStage'}} 
+		<a href="#" class="testPatient" id="{{patient.id}}">Investigate on {{patient.name}}</a>
+		{{/if}}
+
+	  	{{#if session 'resultsStage'}} 
+		<a role="button" class="btn-small newPatient">
+		<p class="newPatient" id="{{patient.id}}">Find out results : {{patient.name}}</p>
+		</a>
+		{{/if}}
+
+	  	{{#if session 'diagnosesStage'}} 
+		<a role="button" class="btn-small newPatient">
+		<p class="newPatient" id="{{patient.id}}">Offer a diagnosis patient : {{patient.name}}</p>
+		</a>
+		{{/if}}
+
+	  	{{#if session 'successStage'}} 
+		<a href="#sucess" role="button" class="btn-small newPatient">
+		<p class="newPatient" id="{{patient.id}}">Success patient : {{patient.name}}</p>
+		</a>
+		{{/if}}
+
+	{{/if}}
+</template>
+
+<template name="greetingsPanel">
+			<p>"{{patient.case.0.greeting}}"</p>
+		    <a class="btn btn-primary next">Okay, {{patient.name}}.</a>
+	</div>
+</template>
+
+<template name="testsPanel">
+			<p>Choose two tests.</p>
+				{{#if session 'error'}}
+					<p>{{session 'error'}}</p>
+				{{/if}}
+			<div class="multicolumn">
+				{{#each investigations}}
+			       	<p>{{>investigation}}</p>
+			     {{/each}}
+			</div>
+			<a class="btn test">Let's try these tests</a>
+		    <a class="btn btn-primary next">That should be all, {{patient.name}}.</a>
+	</div>
+</template>
+
+<template name="investigation">
+	<label id="{{name}}" class="checkbox">
+    	<a rel="tooltip" data-placement="right" data-content="{{desc}}" title="" data-original-title="{{desc}}"><input type="checkbox" id="{{name}}" name="type">{{name}}</input></a>
+    </label>    
+</template>
+
+
+<template name="resultsPanel">
+			{{>results}}
+	<a class="btn btn-primary next">Hmmm... interesting</a>
+</template>
+
+<template name="diagnosesPanel">
+	<p>Choose one diagnosis.</p>
+		<div class="multicolumn">
+			{{#each diagnoses}}
+		       	<p>{{> diagnosis}}</p>
+		     {{/each}}
+		</div>
+	<a class="btn btn-primary next diag" >I think I have an idea.</a>
+</template>
+
+<template name="diagnosis">
+	<label id="{{name}}" class="radio">
+    	<input type="radio" id="{{name}}" name="type">{{name}}
+    	</input>
+    </label>    
+</template>
+
+<template name="successPanel">
+	<p>How's {{patient.name}} now?</p>
+		    <a class="btn btn-primary next">Yay!</a>
+</template>
+
+<template name="panel">
+    {{#if session 'resultsStage'}}
+    	<p>{{>results}}</p>
+    {{/if}}
+</template>
+
+
+
+<template name="results"> 
+	{{#if currentUser}}
+		{{#each currentUser.profile.current.results}}
+			<p>{{this.test}} : <span class=
+				{{#if this.abnormal}}
+					"text-error"
+				{{/if}}
+				>
+				{{this.result}}</span></p>
+			<br />
+		{{/each}}
+	{{/if}}
+</template>
+
+
+
