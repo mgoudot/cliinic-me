@@ -175,6 +175,12 @@ var setStage = function (i) {
         //allow to progress in the game
         stage++
         setStage(stage)
+
+        //This is to give a hint: where to click after the results, from user feedback.
+        Meteor.setTimeout(function(){
+          $('a[class="newPatient results"]').tooltip('show')
+          }, 400);
+       
       }
     },
 
@@ -207,6 +213,7 @@ var setStage = function (i) {
 
   Template.successPanel.events({
     'click a.retry':function() {
+      //resets to waitDiagnosisStage
       stage = 5
       setStage(stage)
     }
