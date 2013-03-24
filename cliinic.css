@@ -29,31 +29,33 @@
 	position:relative;
 }
 
-img.arrival {
+/*-------- Wrappers for the images --------*/
+
+a.arrival {
 	position:absolute;
 	top:150px;
 	left:100px;
 }
 
-img.bed {
+a.bed {
 	position:absolute;
 	top:49px;
 	left:500px;
 }
 
-img.moa {
+a.moa {
 	position:absolute;
 	top:36px;
 	left:100px;
 }
 
-img.results {
+a.results {
 	position:absolute;
 	top:135px;
 	left:150px;
 }
 
-img.diag {
+a.diag {
 	position:absolute;
 	top:46px;
 	left:535px;

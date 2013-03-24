@@ -105,43 +105,43 @@
 
 <template name='newPatient'>
 
-		<img class='moa' src='/moa.png'>
+		<a class="moa" rel="tooltip" data-placement="right" title="Your friendly Medical Office Assistant"><img class='moa' src='/moa.png'></a>
 
 	{{#if patient}}
 	  	{{#if session 'arrivalStage'}} 
-		<a class="newPatient" id="{{patient.id}}" href="#"><img class="arrival" src='/{{patient.name}}.png'></a>
+		<a class="newPatient arrival" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Greet {{patient.name}}"><img class="arrival" src='/{{patient.name}}.png'></a>
 		{{/if}}
 
 		{{#if session 'greetingStage'}}
-		<img class="arrival" src='/{{patient.name}}.png'>
+		<a class="arrival"><img class="arrival" src='/{{patient.name}}.png'></a>
 		{{/if}}
 
 		{{#if session 'testsStage'}} 
-		<a href="#" class="testPatient" id="{{patient.id}}"><img class='bed' src='/{{patient.name}}Bed.png'></a>
+		<a href="#" class="testPatient bed" id="{{patient.id}}" rel="tooltip" data-placement="right" title="Choose some test below"><img class='bed' src='/{{patient.name}}Bed.png'></a>
 		{{/if}}
 
 		{{#if session 'waitResultsStage'}} 
-		<img class="bed" src='/{{patient.name}}Bed.png'>
-		<a href='#'class="newPatient" id="{{patient.id}}"><img class=results src='/results.png'></a>
+		<a class="bed"><img class="bed" src='/{{patient.name}}Bed.png'></a>
+		<a href='#'class="newPatient results" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Check {{patient.name}}'s test results"><img class=results src='/results.png'></a>
 		{{/if}}
 
 	  	{{#if session 'resultsStage'}} 
-		<img class="bed" src='/{{patient.name}}Bed.png'>
-		<a class="newPatient" id="{{patient.id}}"><img class="results" src='/results.png'></a>
+		<a class='bed'><img class="bed" src='/{{patient.name}}Bed.png'></a>
+		<a class="newPatient results" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Check {{patient.name}}'s test results"><img class="results" src='/results.png'></a>
 		{{/if}}
 
 		{{#if session 'waitDiagnosisStage'}}
-		<img class="bed" src='/{{patient.name}}Bed.png'>
-		<a href='#'class="newPatient" id="{{patient.id}}"><img class="diag" src='/diag.png'></a>
+		<a class='bed'><img class="bed" src='/{{patient.name}}Bed.png'></bed>
+		<a href='#'class="newPatient diag" id="{{patient.id}}"><img class="diag" src='/diag.png'></a>
 		{{/if}}
 
 	  	{{#if session 'diagnosesStage'}} 
-	  	<img class="bed" src='/{{patient.name}}Bed.png'>
-	  	<img class="diag" src='/diag.png'>
+	  	<a class="bed"><img class="bed" src='/{{patient.name}}Bed.png'></a>
+	  	<a class='diag'><img class="diag" src='/diag.png'></a>
 		{{/if}}
 
 	  	{{#if session 'successStage'}} 
-		<img class="arrival" src='/{{patient.name}}Cured.png'>
+		<a class='arrival'><img class="arrival" src='/{{patient.name}}Cured.png'></a>
 		{{/if}}
 
 	{{/if}}
@@ -154,10 +154,11 @@
 </template>
 
 <template name="testsPanel">
-			<p>Choose two tests.</p>
+			<p>Choose two tests.
 				{{#if session 'error'}}
-					<p>{{session 'error'}}</p>
+					<span class="text-error"> {{session 'error'}}</span>
 				{{/if}}
+				</p>
 			<div class="multicolumn">
 				{{#each investigations}}
 			       	<p>{{>investigation}}</p>
@@ -186,7 +187,7 @@
 		       	<p>{{> diagnosis}}</p>
 		     {{/each}}
 		</div>
-	<a class="btn btn-primary next diag" >I think I have an idea.</a>
+	<a class="btn btn-primary next diagnose" >I think I have an idea.</a>
 </template>
 
 <template name="diagnosis">

@@ -156,7 +156,6 @@ var setStage = function (i) {
         tests.push(($(this).attr('id')));
       });
       //might need to dejudify this.
-      console.log(tests)
         if (tests.length < 3) {
         //finding out if the tests are the good ones
         results = []
@@ -172,18 +171,16 @@ var setStage = function (i) {
             'profile.current.investigations':tests,
             'profile.current.results':results
           }});
-        //Meteor.call("addCurrentTestsAndResults", Meteor.user(), tests, results);
       } else {
-        Session.set("error", "You should choose ONLY TWO tests. Please.");
+        //block progression
       }
     },
 
   });
 
   Template.diagnosesPanel.events({ 
-    'click a.diag' : function() {
+    'click a.diagnose' : function() {
       diag = $(":radio:checked").attr('id');
-      //Meteor.call("addCurrentDiagnosis", Meteor.user(), diag)
        Meteor.users.update(Meteor.user._id,
       {$set:{'profile.current.diagnoses' : diag}})
       win = Diagnoses.findOne({ $and: [ { name: diag }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).correct
@@ -199,10 +196,14 @@ var setStage = function (i) {
     }
   });
 
+  Template.newPatient.rendered = function () {
+    $('a[rel=tooltip]').tooltip();
+  }
 
-  Template.investigation.rendered = function() {
-   $('a[rel=tooltip]').tooltip() //initializes all tooltips in this template
-};
+
+//   Template.investigation.rendered = function() {
+//    $('a[rel=tooltip]').tooltip() //initializes all tooltips in this template
+// };
 
 
 //attempt to force only two tests to be checked, beware just disabled the style!
@@ -210,9 +211,10 @@ var setStage = function (i) {
   Template.investigation.events({
     'click label.checkbox' : function () {
       if ($(":checkbox:checked").length >2){
-        console.log("hello") // rest not working anymore don't know why
-        $('a[class="btn btn-primary next"]').addClass("disabled");
-        $('a[class="btn btn-primary next disabled"]').removeClass("disabled");
+        Session.set('error', "You should choose ONLY TWO tests. Please.");
+        console.log("hello")
+      } else {
+        Session.set('error', null)
       }
     }
   });
