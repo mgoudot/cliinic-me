@@ -111,7 +111,7 @@
 
 <template name='newPatient'>
 
-	<a class="moa" rel="tooltip" data-placement="right" title="Velma again, your friendly Medical Office Assistant! You should take care of {{patient.name}} today..."><img class='moa' src='/moa.png'></a>
+	<a class="moa" rel="tooltip" data-placement="right" title="&laquo;Velma again, your friendly Medical Office Assistant! You should take care of {{patient.name}} today...&raquo;"><img class='moa' src='/moa.png'></a>
 
 	{{#if patient}}
 	  	{{#if session 'arrivalStage'}} 
@@ -128,17 +128,18 @@
 
 		{{#if session 'waitResultsStage'}} 
 		<a class="bed"><img class="bed" src='/{{patient.name}}Bed.png'></a>
-		<a href='#'class="newPatient results" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Check {{patient.name}}'s test results"><img class=results src='/results.png'></a>
+		<a href='#'class="results" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Check {{patient.name}}'s test results"><img class=results src='/results.png'></a>
 		{{/if}}
 
 	  	{{#if session 'resultsStage'}} 
-		<a class='bed'><img class="bed" src='/{{patient.name}}Bed.png'></a>
-		<a class="newPatient results" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Check {{patient.name}}'s test results"><img class="results" src='/results.png'></a>
+		<a class='testPatient bed'><img class="bed" src='/{{patient.name}}Bed.png'></a>
+		<a class="results" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Check {{patient.name}}'s test results"><img class="results" src='/results.png'></a>
 		{{/if}}
 
 		{{#if session 'waitDiagnosisStage'}}
-		<a class='bed'><img class="bed" src='/{{patient.name}}Bed.png'></bed>
-		<a href='#'class="newPatient diag" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Offer a diagnosis for {{patient.name}}'s condition"><img class="diag" src='/diag.png'></a>
+		<a class='testPatient bed retryTest' href='#' id="{{patient.id}}" rel="tooltip" data-placement="right" title="Try out a few other tests (the more tests you make, the less points you get!)"><img class="bed" src='/{{patient.name}}Bed.png'></a>
+
+		<a href='#'class="diag" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Offer a diagnosis for {{patient.name}}'s condition"><img class="diag" src='/diag.png'></a>
 		{{/if}}
 
 	  	{{#if session 'diagnosesStage'}} 
@@ -226,7 +227,7 @@
 
 
 <template name="results"> 
-	{{#if currentUser}}
+	{{#if currentUser}}	
 		{{#each currentUser.profile.current.results}}
 			<p>{{this.test}} : <span class=
 				{{#if this.abnormal}}
@@ -240,5 +241,5 @@
 
 
 <template name="unlogged">
-	<a class="moa start" rel="tooltip" data-placement="right" title="Hi I'm Velma, your friendly Medical Office Assistant! Please sign in to start playing in your cliinic."><img class='moa' src='/moa.png'></a>
+	<a class="moa start" rel="tooltip" data-placement="right" title="&laquo;Hi I'm Velma, your friendly Medical Office Assistant! Please sign in to start playing in your cliinic.&raquo;"><img class='moa' src='/moa.png'></a>
 </template>

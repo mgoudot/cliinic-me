@@ -25,14 +25,14 @@ if (Meteor.isClient) {
 
 var stage = 0;
 
-Session.set('arrivalStage', true)
-Session.set('greetingStage', false);
-Session.set('testsStage', false);
-Session.set('waitResultsStage', false)
-Session.set('resultsStage', false)
-Session.set('waitDiagnosisStage', false)
-Session.set('diagnosesStage', false);
-Session.set('successStage', false);
+Session.set('arrivalStage', true); //0
+Session.set('greetingStage', false); //1
+Session.set('testsStage', false); //2
+Session.set('waitResultsStage', false); //3
+Session.set('resultsStage', false); //4
+Session.set('waitDiagnosisStage', false); //5
+Session.set('diagnosesStage', false); //6
+Session.set('successStage', false); //7
 //This particular stage can coexist with other stages and is not in the setStage function
 Session.set('wrongStage', false);
 Session.set('error', null);
@@ -125,7 +125,6 @@ var setStage = function (i) {
       if (!Meteor.user().profile.current.patient) {
         Meteor.call("newPatient", Meteor.user(), patient_id);
       }
-      console.log('hello')
       Meteor.setTimeout(function () {
       stage = stage + 1;
       setStage(stage);
@@ -137,6 +136,23 @@ var setStage = function (i) {
       stage = 0;
       setStage(stage);
       }, 300);
+    },
+
+    'click a.results':function() {
+      //goes from waitResultsStage to resultsStage
+      stage = 4
+      setStage(stage)
+    },
+
+    'click a.diag':function() {
+      stage = 6
+      setStage(stage)
+    },  
+
+    'click a.retryTest':function(){
+      //resets to testsStage
+      stage = 2
+      setStage(stage)
     }
 
   })
@@ -178,7 +194,7 @@ var setStage = function (i) {
 
         //This is to give a hint: where to click after the results, from user feedback.
         Meteor.setTimeout(function(){
-          $('a[class="newPatient results"]').tooltip('show')
+          $('a[class="results"]').tooltip('show')
           }, 400);
        
       }
@@ -219,17 +235,17 @@ var setStage = function (i) {
     }
   })
 
+
   Template.newPatient.rendered = function () {
     $('a[rel=tooltip]').tooltip();
   }
 
   Template.unlogged.rendered = function() {
     $('a[rel=tooltip]').tooltip();
-    Meteor.setTimeout(function(){$('a[class="moa start"]').tooltip('show')}, 300)
+    Meteor.setTimeout(function(){$('a[class="moa start"]').tooltip('show')}, 800)
   }
 
 
-//attempt to force only two tests to be checked, beware just disabled the style!
 
   Template.investigation.events({
     'click label.checkbox' : function () {
@@ -357,7 +373,7 @@ Accounts.onCreateUser(function(options, user) {
         patient_id:"judy",
         case_id:"judy_first",
         desc:"Examine the patient",
-        result:"Slight fever (38°C), redness over back of hands the knee joint is red, warm, swollen, and extermely tender. The wrists and hands are also war and swollen.",
+        result:"Slight fever (38°C), redness over back of hands the knee joint is red, warm, swollen, and extermely tender. The wrists and hands are also warm and swollen.",
         abnormal:true},
         {name:"Imaging X-ray",
         patient_id:"judy",
