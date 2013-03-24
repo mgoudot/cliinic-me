@@ -188,6 +188,7 @@ var setStage = function (i) {
       win = Diagnoses.findOne({ $and: [ { name: diag }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).correct
       console.log(win)
       if (win) {
+        Session.set("wrongStage", false)
         Meteor.users.update(Meteor.user()._id, {
           $inc:{'profile.xp':70},
         });
