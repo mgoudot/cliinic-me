@@ -117,7 +117,7 @@
 		{{/if}}
 
 		{{#if session 'testsStage'}} 
-		<a href="#" class="testPatient bed" id="{{patient.id}}" rel="tooltip" data-placement="right" title="Choose some test below"><img class='bed' src='/{{patient.name}}Bed.png'></a>
+		<a href="#" class="testPatient bed" id="{{patient.id}}" rel="tooltip" data-placement="right" title="Choose some tests below"><img class='bed' src='/{{patient.name}}Bed.png'></a>
 		{{/if}}
 
 		{{#if session 'waitResultsStage'}} 
@@ -132,7 +132,7 @@
 
 		{{#if session 'waitDiagnosisStage'}}
 		<a class='bed'><img class="bed" src='/{{patient.name}}Bed.png'></bed>
-		<a href='#'class="newPatient diag" id="{{patient.id}}"><img class="diag" src='/diag.png'></a>
+		<a href='#'class="newPatient diag" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Offer a diagnosis for {{patient.name}}'s condition"><img class="diag" src='/diag.png'></a>
 		{{/if}}
 
 	  	{{#if session 'diagnosesStage'}} 
@@ -141,7 +141,12 @@
 		{{/if}}
 
 	  	{{#if session 'successStage'}} 
-		<a class='arrival'><img class="arrival" src='/{{patient.name}}Cured.png'></a>
+	  		{{#unless session 'wrongStage' }}
+				<a class='arrival'><img class="arrival" src='/{{patient.name}}Cured.png'></a>
+			{{/unless}}
+			{{#if session 'wrongStage'}}
+				<a class='bed'><img class="bed" src='/{{patient.name}}Lost.png'></a>
+			{{/if}}
 		{{/if}}
 
 	{{/if}}
@@ -164,7 +169,7 @@
 			       	<p>{{>investigation}}</p>
 			     {{/each}}
 			</div>
-		    <a class="btn btn-primary next test">That should be all, {{patient.name}}.</a>
+		    <a class="btn btn-primary test">That should be all, {{patient.name}}.</a>
 	</div>
 </template>
 
@@ -187,7 +192,7 @@
 		       	<p>{{> diagnosis}}</p>
 		     {{/each}}
 		</div>
-	<a class="btn btn-primary next diagnose" >I think I have an idea.</a>
+	<a class="btn btn-primary diagnose" >I think I have an idea.</a>
 </template>
 
 <template name="diagnosis">
@@ -198,9 +203,13 @@
 </template>
 
 <template name="successPanel">
-	<p>How's {{patient.name}} now?</p>
-	<p>{{patient.case.0.success}}</p>
-		    <a class="btn btn-primary next">Yay!</a>
+	{{#unless session 'wrongStage'}}
+		<p>{{patient.case.0.success}}</p>
+		<a class="btn btn-primary next">Yay!</a>
+	{{/unless}}
+	{{#if session 'wrongStage'}}
+		<a class="btn btn-primary retry">No that's not it...</a>
+	{{/if}}
 </template>
 
 <template name="panel">
@@ -219,7 +228,6 @@
 				{{/if}}
 				>
 				{{this.result}}</span></p>
-			<br />
 		{{/each}}
 	{{/if}}
 </template>

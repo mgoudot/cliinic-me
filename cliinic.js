@@ -33,6 +33,8 @@ Session.set('resultsStage', false)
 Session.set('waitDiagnosisStage', false)
 Session.set('diagnosesStage', false);
 Session.set('successStage', false);
+//This particular stage can coexist with other stages and is not in the setStage function
+Session.set('wrongStage', false);
 Session.set('error', null);
 
 var setStage = function (i) {
@@ -143,8 +145,7 @@ var setStage = function (i) {
     'click a.next' : function () {
       Meteor.setTimeout(function(){
         stage = stage + 1;
-        setStage(stage),
-        console.log(stage);
+        setStage(stage);
       }, 200)}
   })
 
@@ -171,8 +172,9 @@ var setStage = function (i) {
             'profile.current.investigations':tests,
             'profile.current.results':results
           }});
-      } else {
-        //block progression
+        //allow to progress in the game
+        stage++
+        setStage(stage)
       }
     },
 
@@ -192,9 +194,22 @@ var setStage = function (i) {
         Meteor.users.update(Meteor.user()._id, {
           $inc:{'profile.reputation':70}
         });
+        stage++
+        setStage(stage)
+      } else {
+        Session.set("wrongStage", true)
+        stage++
+        setStage(stage)
       }
     }
   });
+
+  Template.successPanel.events({
+    'click a.retry':function() {
+      stage = 5
+      setStage(stage)
+    }
+  })
 
   Template.newPatient.rendered = function () {
     $('a[rel=tooltip]').tooltip();
@@ -211,7 +226,7 @@ var setStage = function (i) {
   Template.investigation.events({
     'click label.checkbox' : function () {
       if ($(":checkbox:checked").length >2){
-        Session.set('error', "You should choose ONLY TWO tests. Please.");
+        Session.set('error', "I said ONLY TWO tests. Please?");
         console.log("hello")
       } else {
         Session.set('error', null)
