@@ -223,10 +223,10 @@ var setStage = function (i) {
     $('a[rel=tooltip]').tooltip();
   }
 
-
-//   Template.investigation.rendered = function() {
-//    $('a[rel=tooltip]').tooltip() //initializes all tooltips in this template
-// };
+  Template.unlogged.rendered = function() {
+    $('a[rel=tooltip]').tooltip();
+    Meteor.setTimeout(function(){$('a[class="moa start"]').tooltip('show')}, 300)
+  }
 
 
 //attempt to force only two tests to be checked, beware just disabled the style!

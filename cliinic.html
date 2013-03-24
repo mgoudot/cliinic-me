@@ -53,8 +53,14 @@
 			        </div>
 
    				<div class="interaction-panel span8 newPatient">
+
+
+   					{{#unless currentUser}}
+   						{{> unlogged}}
+   					{{/unless}}
+
    					{{#if currentUser}}
-			    		{{>newPatient}}	
+			    		{{> newPatient}}	
 			    	{{/if}}
 
 		    	</div>
@@ -105,7 +111,7 @@
 
 <template name='newPatient'>
 
-		<a class="moa" rel="tooltip" data-placement="right" title="Your friendly Medical Office Assistant"><img class='moa' src='/moa.png'></a>
+	<a class="moa" rel="tooltip" data-placement="right" title="Velma again, your friendly Medical Office Assistant! You should take care of {{patient.name}} today..."><img class='moa' src='/moa.png'></a>
 
 	{{#if patient}}
 	  	{{#if session 'arrivalStage'}} 
@@ -233,4 +239,6 @@
 </template>
 
 
-
+<template name="unlogged">
+	<a class="moa start" rel="tooltip" data-placement="right" title="Hi I'm Velma, your friendly Medical Office Assistant! Please sign in to start playing in your cliinic."><img class='moa' src='/moa.png'></a>
+</template>
