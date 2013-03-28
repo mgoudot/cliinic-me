@@ -7,7 +7,7 @@ Players = new Meteor.Collection("players");
 Disease = new Meteor.Collection("disease");
 Symptoms = new Meteor.Collection("symptoms");
 Investigations = new Meteor.Collection("investigations")
-
+Log = new Meteor.Collection("log");
 
 
 
@@ -179,7 +179,7 @@ var setStage = function (i) {
         for (var i = 0; i < tests.length; i++ ) {
           result = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).result
           abnormal = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).abnormal
-          results.push({'test': tests[i], 'result':result, 'abnormal': abnormal})
+          results.push({'test':   tests[i], 'result':result, 'abnormal': abnormal})
         }
         console.log(results);
         console.log(tests);
@@ -192,7 +192,7 @@ var setStage = function (i) {
         stage++
         setStage(stage)
 
-        //This is to give a hint: where to click after the results, from user feedback.
+        //This is to give a hint: where to click after the investigations, from user feedback.
         Meteor.setTimeout(function(){
           $('a[class="results"]').tooltip('show')
           }, 400);
@@ -201,6 +201,19 @@ var setStage = function (i) {
     },
 
   });
+
+
+Template.resultsPanel.events({
+
+  //This is to give a hint: where to click after the results
+
+  'click a.next' : function(){
+    Meteor.setTimeout(function(){
+          $('a[class="testPatient bed retryTest"]').tooltip('show');
+          $('a[class="diag"]').tooltip('show')
+          }, 400);
+  }
+})
 
   Template.diagnosesPanel.events({ 
     'click a.diagnose' : function() {
