@@ -21,7 +21,7 @@ if (Meteor.isClient) {
 
 
 
-//---------------- VARIABLES ----------------
+//---------------- VARIABLES & FUNCTIONS ----------------
 
 var stage = 0;
 
@@ -33,18 +33,31 @@ Session.set('resultsStage', false); //4
 Session.set('waitDiagnosisStage', false); //5
 Session.set('diagnosesStage', false); //6
 Session.set('successStage', false); //7
+Session.set('epilogueStage', false); //8
 //This particular stage can coexist with other stages and is not in the setStage function
 Session.set('wrongStage', false);
 Session.set('error', null);
 
 var setStage = function (i) {
-  stageArray = ['arrivalStage','greetingStage', 'testsStage', 'waitResultsStage','resultsStage', 'waitDiagnosisStage', 'diagnosesStage','successStage']
+  stageArray = ['arrivalStage',
+    'greetingStage', 
+    'testsStage', 
+    'waitResultsStage',
+    'resultsStage', 
+    'waitDiagnosisStage', 
+    'diagnosesStage',
+    'successStage',
+    'epilogueStage']
   for (var k = 0; k<stageArray.length;k++){
     Session.set(stageArray[k], false);
   }
   Session.set(stageArray[i], true);
-}
+};
 
+// var statusChange = function (id) {
+//   status = Meteor.user().profile.current.status
+//   return Patients.findOne(id)
+// }
 
 
 
@@ -120,15 +133,17 @@ var setStage = function (i) {
 
   Template.newPatient.events({
     'click a.newPatient' : function () {
-      patient_id = $('p[class="newPatient"]').attr('id')
-      // this adds the current patient being treated to the user profile.
+      patient_id = $('a[class="newPatient arrival"]').attr('id')
       if (!Meteor.user().profile.current.patient) {
-        Meteor.call("newPatient", Meteor.user(), patient_id);
+        Meteor.users.update(Meteor.user()._id, {$set:{'profile.current.patient':patient_id}});
       }
+      // this adds the current patient being treated to the user profile.
       Meteor.setTimeout(function () {
       stage = stage + 1;
       setStage(stage);
       }, 100);
+      //temporary resetting the player statuss
+      Meteor.users.update(Meteor.user()._id, {$set:{'profile.current.status':0}})
     },
 
     'click button.close' : function() {
@@ -145,9 +160,10 @@ var setStage = function (i) {
     },
 
     'click a.diag':function() {
+      //goes to diagnosesStage
       stage = 6
       setStage(stage)
-    },  
+    },
 
     'click a.retryTest':function(){
       //resets to testsStage
@@ -187,7 +203,8 @@ var setStage = function (i) {
           {$set:{
             'profile.current.investigations':tests,
             'profile.current.results':results
-          }});
+          }
+        });
         //allow to progress in the game
         stage++
         setStage(stage)
@@ -230,12 +247,24 @@ Template.resultsPanel.events({
         Meteor.users.update(Meteor.user()._id, {
           $inc:{'profile.reputation':70}
         });
-        stage++
-        setStage(stage)
+        stage++;
+        setStage(stage);
+        statusChange(Meteor.user().profile.current.patient);
       } else {
+        //if wrong diagnosis
         Session.set("wrongStage", true)
         stage++
         setStage(stage)
+        Meteor.users.update(Meteor.user()._id, 
+          {
+            // commented out for testing purpose for now.
+            // $push:{
+            //   'profile.current.diagnoses':diag,
+            // },
+            $inc:{
+              'profile.current.status':1
+            }});
+        statusChange(Meteor.user().profile.current.patient);
       }
     }
   });
@@ -285,6 +314,8 @@ if (Meteor.isServer) {
 
 
 //---------------- METHODS ----------------
+
+//some functions are deprecated, don't know why they wouldn't work properly.
 
 Meteor.methods({
   newPatient : function(user, patient_id) {
@@ -339,6 +370,7 @@ Accounts.onCreateUser(function(options, user) {
           investigations:[],
           results:[],
           diagnoses:[],
+          status:0,
         },
         archive:[],
         }
@@ -356,12 +388,16 @@ Accounts.onCreateUser(function(options, user) {
         name:"Judy",
         id:"judy",
         level:1,
-        bio:"",
         // need to cut off this into the classes it belongs to.
         case:[{
           name:"judy_first",
-          solved:false,
-          greeting:"My right knee is swollen and more and more painful over the past day. I don’t really know what caused it – I didn’t injure it or anything. I’m 42 years old, generally healthy and taking no medications. This has never happened to me before. A few hours after my knee pain started my hands and wrists are also starting to hurt so much that I can barely do anything!",
+          rank:0,
+          status:[
+            {message:"My right knee is swollen and more and more painful over the past day. I don’t really know what caused it – I didn’t injure it or anything. I’m 28 years old, generally healthy and taking no medications. This has never happened to me before. A few hours after my knee pain started my hands and wrists are also starting to hurt so much that I can barely do anything!"},
+            {message:'Judy: &laquo;My knee hurts so much! What’s going on?&laquo; Did you order the right diagnosis and treatment? Repeat or order some new tests?'},
+            {message:'Judy is still not getting better. Now both of her knees and ankles are red, hot, and swollen. Her hands and wrists also got worse. Her spirits are quite low. “My husband is still not here to see me. I think he’s cheating on me.”'},
+            {message:'The nurse runs to you. “Oh no! Judy is in a life-threatening condition – she has a high fever (40C), very low blood pressure (60/30); she’s breathing extremely fast (30 breaths/minute) and her heart is beating very heart as well (140 beats/minute). A blood culture showed bacterial infection in the blood. She needs fluids, antibiotics, and drugs to help her heart!"'},
+            ],
           investigations:[
             {name:"Physical Exam"},
             {name:"Imaging X-ray"},
@@ -370,7 +406,7 @@ Accounts.onCreateUser(function(options, user) {
             {name:"Blood count"},
             {name:"Blood antibody test/Autoimmune screen"}
             ],
-            diagnoses:[
+          diagnoses:[
             {name:"Gout",correct:false},
             {name:"Pseudogout",correct:false},
             {name:"Bacterial Arthritis",correct:true},
@@ -378,9 +414,47 @@ Accounts.onCreateUser(function(options, user) {
             {name:"Rheumatoid Arthritis",correct:false},
             {name:"Osteoarthritis",correct:false}
             ],
-            success:"Congratulations, Judy feels much better!",
-          }]
-        });
+          epilogue:[
+          {
+            rank:0,
+            question:"Judy asks you, “What could have caused this? I really have no clue, all of a sudden this happened!” Judy’s husband Marc finally got to her bedside. He had been very busy since getting back from his business trip. He asks if it would be okay to speak to you in private.",
+            answers:[
+            {
+              answer:"Yes",
+              next:true,
+              message:""
+            },
+            {
+              answer:"No",
+              next:false,
+              message:"Judy is discharged."
+            }]
+          },
+          {
+            rank:1,
+            question:"Marc says he slept with a prostitute while he was away at a business trip, and didn't use any protection. He's been having a bit of discharge from his penis lately. He asks if something sexually transmitted could have caused his wife’s suffering?",
+            answers:[
+            {
+              answer:"Yes",
+              next:true,
+              message:""
+            },
+            {
+              answer:"No",
+              next:false,
+              message:"Wrong. Some STDs, in this case gonorrhea, can lead to symptoms in the joints. Always ask about sexual history when someone has an acute joint pain."
+            }]
+          },
+
+          ],
+          success:"Congratulations, Judy feels much better!",
+          bonus:{ 
+            message:"Some STDs, in this case gonorrhea, can lead to symptoms in the joints. Always ask about sexual history when someone has an acute joint pain. Here are some bonus reputation points for a job well jobbed! Before discharging Judy, you give her the address of a good marriage counselor.",
+            reputation:100,
+            xp:20,
+          }
+        }]
+      });
 
     inv = [{name:"Physical Exam",
         patient_id:"judy",
