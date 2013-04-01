@@ -37,6 +37,9 @@ Session.set('epilogueStage', false); //8
 //This particular stage can coexist with other stages and is not in the setStage function
 Session.set('wrongStage', false);
 Session.set('error', null);
+Session.set('patientStatus', null)
+Session.set('nurseStatus', null)
+Session.set('narratorStatus', null)
 
 var setStage = function (i) {
   stageArray = ['arrivalStage',
@@ -54,10 +57,15 @@ var setStage = function (i) {
   Session.set(stageArray[i], true);
 };
 
-// var statusChange = function (id) {
-//   status = Meteor.user().profile.current.status
-//   return Patients.findOne(id)
-// }
+var setStatus = function (patient_id) {
+  s = Meteor.user().profile.current.status
+  p = Patients.findOne({id:patient_id})
+  c = p.case[0]
+  st = c.status[s]
+  Session.set('narratorStatus', st.narrator)
+  Session.set('nurseStatus', st.nurse)
+  Session.set('patientStatus', st.patient)
+  };
 
 
 
@@ -97,7 +105,7 @@ var setStage = function (i) {
   Template.results.results = function() {
   };
 
-  Template.greetingsPanel.patient = function() {
+  Template.statusPanel.patient = function() {
     if (Patients.findOne({name:"Judy"})) {
       return Patients.findOne({name:"Judy"})
     }
@@ -127,6 +135,9 @@ var setStage = function (i) {
       }
     };
 
+  Template.epiloguePanel.question = function() {
+    return Patients.findOne({name:"Judy"}).case[0].epilogue
+  }
 
 
   //---------------- EVENTS ----------------
@@ -142,8 +153,9 @@ var setStage = function (i) {
       stage = stage + 1;
       setStage(stage);
       }, 100);
-      //temporary resetting the player statuss
+      //temporary (dev) fix to reset the player statuss
       Meteor.users.update(Meteor.user()._id, {$set:{'profile.current.status':0}})
+      setStatus(patient_id);
     },
 
     'click button.close' : function() {
@@ -197,8 +209,6 @@ var setStage = function (i) {
           abnormal = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).abnormal
           results.push({'test':   tests[i], 'result':result, 'abnormal': abnormal})
         }
-        console.log(results);
-        console.log(tests);
         Meteor.users.update(Meteor.user()._id, 
           {$set:{
             'profile.current.investigations':tests,
@@ -221,16 +231,14 @@ var setStage = function (i) {
 
 
 Template.resultsPanel.events({
-
   //This is to give a hint: where to click after the results
-
   'click a.next' : function(){
     Meteor.setTimeout(function(){
           $('a[class="testPatient bed retryTest"]').tooltip('show');
           $('a[class="diag"]').tooltip('show')
           }, 400);
   }
-})
+});
 
   Template.diagnosesPanel.events({ 
     'click a.diagnose' : function() {
@@ -238,7 +246,6 @@ Template.resultsPanel.events({
        Meteor.users.update(Meteor.user._id,
       {$set:{'profile.current.diagnoses' : diag}})
       win = Diagnoses.findOne({ $and: [ { name: diag }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).correct
-      console.log(win)
       if (win) {
         Session.set("wrongStage", false)
         Meteor.users.update(Meteor.user()._id, {
@@ -249,7 +256,6 @@ Template.resultsPanel.events({
         });
         stage++;
         setStage(stage);
-        statusChange(Meteor.user().profile.current.patient);
       } else {
         //if wrong diagnosis
         Session.set("wrongStage", true)
@@ -263,18 +269,24 @@ Template.resultsPanel.events({
             // },
             $inc:{
               'profile.current.status':1
-            }});
-        statusChange(Meteor.user().profile.current.patient);
+            }});  
+        setStatus(Meteor.user().profile.current.patient);
       }
     }
   });
 
-  Template.successPanel.events({
+  Template.statusPanel.events({
     'click a.retry':function() {
       //resets to waitDiagnosisStage
       stage = 5
       setStage(stage)
+    },
+
+    'click a.epilogue':function(){
+      stage = 8
+      setStage(stage)
     }
+
   })
 
 
@@ -393,10 +405,18 @@ Accounts.onCreateUser(function(options, user) {
           name:"judy_first",
           rank:0,
           status:[
-            {message:"My right knee is swollen and more and more painful over the past day. I don’t really know what caused it – I didn’t injure it or anything. I’m 28 years old, generally healthy and taking no medications. This has never happened to me before. A few hours after my knee pain started my hands and wrists are also starting to hurt so much that I can barely do anything!"},
-            {message:'Judy: &laquo;My knee hurts so much! What’s going on?&laquo; Did you order the right diagnosis and treatment? Repeat or order some new tests?'},
-            {message:'Judy is still not getting better. Now both of her knees and ankles are red, hot, and swollen. Her hands and wrists also got worse. Her spirits are quite low. “My husband is still not here to see me. I think he’s cheating on me.”'},
-            {message:'The nurse runs to you. “Oh no! Judy is in a life-threatening condition – she has a high fever (40C), very low blood pressure (60/30); she’s breathing extremely fast (30 breaths/minute) and her heart is beating very heart as well (140 beats/minute). A blood culture showed bacterial infection in the blood. She needs fluids, antibiotics, and drugs to help her heart!"'},
+            {patient:"My right knee is swollen and more and more painful over the past day. I don’t really know what caused it – I didn’t injure it or anything. I’m 28 years old, generally healthy and taking no medications. This has never happened to me before. A few hours after my knee pain started my hands and wrists are also starting to hurt so much that I can barely do anything!",
+            nurse:'',
+            narrator:"A young woman enters, she looks in quite some pain."},
+            {patient:"My knee hurts so much! What’s going on?",
+            nurse:'',
+            narrator:"Did you order the right diagnosis and treatment? Repeat or order some new tests."},
+            {patient:"My husband is still not here to see me. I think he’s cheating on me.", 
+            nurse:'',
+            narrator:'Judy is still not getting better. Now both of her knees and ankles are red, hot, and swollen. Her hands and wrists also got worse. Her spirits are quite low.'},
+            {patient:"*faints*",
+            nurse:"Oh no! Judy is in a life-threatening condition – she has a high fever (40C), very low blood pressure (60/30); she’s breathing extremely fast (30 breaths/minute) and her heart is beating very heart as well (140 beats/minute). A blood culture showed bacterial infection in the blood. She needs fluids, antibiotics, and drugs to help her heart!",
+            narrator:"The nurse runs to you."},
             ],
           investigations:[
             {name:"Physical Exam"},

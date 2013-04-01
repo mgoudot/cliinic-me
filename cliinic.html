@@ -93,7 +93,7 @@
 
 <template name='feed'>
 	{{#if session 'greetingStage'}} 
-		<p>{{> greetingsPanel}}</p>
+		<p>{{> statusPanel}}</p>
 	{{/if}}
 	{{#if session 'testsStage'}} 
 		<p>{{> testsPanel}}</p>
@@ -105,8 +105,12 @@
 		<p>{{> diagnosesPanel}}</p>
 	{{/if}}
 	{{#if session 'successStage'}} 
-		<p>{{> successPanel}}</p>
+		<p>{{> statusPanel}}</p>
 	{{/if}}
+	{{#if session 'epilogueStage'}}
+		<p>{{> epiloguePanel}}
+	{{/if}}
+
 </template>
 
 <template name='newPatient'>
@@ -159,25 +163,49 @@
 	{{/if}}
 </template>
 
-<template name="greetingsPanel">
-			<p>"{{patient.case.0.status.0.message}}"</p>
-		    <a class="btn btn-primary next">Okay, {{patient.name}}.</a>
-	</div>
+<template name="statusPanel">
+	{{#unless session 'successStage'}}
+		<p>{{session 'narratorStatus'}}</p>
+		{{#if session 'nurseStatus'}}
+			<p>Nurse: &laquo;{{session 'nurseStatus'}}&raquo;</p>
+		{{/if}}
+		{{#if session 'patientStatus'}}
+			<p>{{patient.name}}: &laquo;{{session 'patientStatus'}}&raquo;</p>
+		{{/if}}
+		{{#unless session 'wrongStage'}}
+			<a class="btn btn-primary next">Okay, {{patient.name}}.</a>
+	    {{/unless}}
+	{{/unless}}
+	{{#if session 'successStage'}}
+		{{#unless session 'wrongStage'}}
+			<p>{{patient.case.0.success}}</p>
+			<a class="btn btn-primary epilogue">Looks like I'm getting the hang of this...</a>
+		{{/unless}}
+		{{#if session 'wrongStage'}}
+			<p>{{session 'narratorStatus'}}</p>
+			{{#if session 'nurseStatus'}}
+				<p>Nurse: &laquo;{{session 'nurseStatus'}}&raquo;</p>
+			{{/if}}
+			{{#if session 'patientStatus'}}
+				<p>{{patient.name}}: &laquo;{{session 'patientStatus'}}&raquo;</p>
+			{{/if}}
+			<a class="btn btn-primary retry">No that's not it...</a>
+		{{/if}}
+	{{/if}}
 </template>
 
 <template name="testsPanel">
-			<p>Choose two tests.
-				{{#if session 'error'}}
-					<span class="text-error"> {{session 'error'}}</span>
-				{{/if}}
-				</p>
-			<div class="multicolumn">
-				{{#each investigations}}
-			       	<p>{{>investigation}}</p>
-			     {{/each}}
-			</div>
-		    <a class="btn btn-primary test">That should be all, {{patient.name}}.</a>
+	<p>Choose two tests.
+		{{#if session 'error'}}
+			<span class="text-error"> {{session 'error'}}</span>
+		{{/if}}
+		</p>
+	<div class="multicolumn">
+		{{#each investigations}}
+	       	<p>{{>investigation}}</p>
+	     {{/each}}
 	</div>
+    <a class="btn btn-primary test">That should be all, {{patient.name}}.</a>
 </template>
 
 <template name="investigation">
@@ -214,15 +242,13 @@
 		<p>{{patient.case.0.success}}</p>
 		<a class="btn btn-primary next">Yay!</a>
 	{{/unless}}
-	{{#if session 'wrongStage'}}
-		<a class="btn btn-primary retry">No that's not it...</a>
-	{{/if}}
 </template>
 
-<template name="panel">
-    {{#if session 'resultsStage'}}
-    	<p>{{>results}}</p>
-    {{/if}}
+<template name="epiloguePanel">
+	<p>{{epilogue.0.question}}</p>
+	{{#each epilogue.0.answers}}
+		<a class="btn btn-primary" >{{epilogue.0.answer}}</a>
+	{{/each}}
 </template>
 
 
