@@ -12,7 +12,7 @@ Log = new Meteor.Collection("log");
 
 
 //----------------        ----------------
-//---------------- CLIENT ----------------
+//---------------- CLIENT ---------------- 
 //----------------        ----------------
 
 
@@ -20,10 +20,12 @@ if (Meteor.isClient) {
 
 
 
-
 //---------------- VARIABLES & FUNCTIONS ----------------
 
-var stage = 0;
+//stage allows to navigate in all the session-stage variable, thanks to the setStage() function
+stage = 0;
+//when in epilogueStage, epPhase allow to navigate inside the questions.
+epPhase = 0;
 
 Session.set('arrivalStage', true); //0
 Session.set('greetingStage', false); //1
@@ -34,14 +36,23 @@ Session.set('waitDiagnosisStage', false); //5
 Session.set('diagnosesStage', false); //6
 Session.set('successStage', false); //7
 Session.set('epilogueStage', false); //8
+Session.set('finalStage', false); //9
+
 //This particular stage can coexist with other stages and is not in the setStage function
 Session.set('wrongStage', false);
+
 Session.set('error', null);
+
+//This status session variables are here for the narrative structure.
+//They appear in greetingStage and successStage.
 Session.set('patientStatus', null)
 Session.set('nurseStatus', null)
 Session.set('narratorStatus', null)
 
-var setStage = function (i) {
+Session.set('epilogue', null)
+
+
+setStage = function (i) {
   stageArray = ['arrivalStage',
     'greetingStage', 
     'testsStage', 
@@ -50,14 +61,15 @@ var setStage = function (i) {
     'waitDiagnosisStage', 
     'diagnosesStage',
     'successStage',
-    'epilogueStage']
+    'epilogueStage',
+    'finalStage']
   for (var k = 0; k<stageArray.length;k++){
     Session.set(stageArray[k], false);
   }
   Session.set(stageArray[i], true);
 };
 
-var setStatus = function (patient_id) {
+setStatus = function (patient_id) {
   s = Meteor.user().profile.current.status
   p = Patients.findOne({id:patient_id})
   c = p.case[0]
@@ -67,22 +79,35 @@ var setStatus = function (patient_id) {
   Session.set('patientStatus', st.patient)
   };
 
+// setEpilogueStage = function (patient_id, i) {
+//   e = Meteor.user().profile.current.epilogue
+//   p = Patients.findOne({id:patient_id})
+//   c = p.case[0]
+//   ep = c.epilogue[e]
+
+//   Session.set('epQuestion', ep.question)
+// };
+
 
 
   //---------------- HELPERS ----------------
 
   //EMMER EFFIN GOOD HELPER
 
-  Handlebars.registerHelper('session',function(input){
-    return Session.get(input);
+Handlebars.registerHelper('session',function(input){
+  return Session.get(input);
 });
 
-
+Handlebars.registerHelper('epilogue', function(input){
+  return Session.get('epStage' + input)
+})
 
 
   //---------------- TEMPLATES ----------------
 
-  //Template filling like cream, lots of dejudifying to do
+  // Template filling like cream, lots of dejudifying to do
+  // To dejudify: store patient inside a current.patient field in user
+  // & always request it.
 
   Template.testsPanel.investigations = function () {
     if (Patients.findOne({name:"Judy"})) {
@@ -129,14 +154,17 @@ var setStatus = function (patient_id) {
       }
     };
 
-  Template.successPanel.patient = function() {
+  Template.finalPanel.patient = function() {
   if (Patients.findOne({name:"Judy"})) {
     return Patients.findOne({name:"Judy"})
       }
     };
 
-  Template.epiloguePanel.question = function() {
-    return Patients.findOne({name:"Judy"}).case[0].epilogue
+  // think about that one good
+  Template.epiloguePanel.epilogue = function() {
+    epPhase = Meteor.user().profile.current.epilogue
+    ep = Patients.findOne({name:"Judy"}).case[0].epilogue[epPhase]
+    return ep
   }
 
 
@@ -146,7 +174,8 @@ var setStatus = function (patient_id) {
     'click a.newPatient' : function () {
       patient_id = $('a[class="newPatient arrival"]').attr('id')
       if (!Meteor.user().profile.current.patient) {
-        Meteor.users.update(Meteor.user()._id, {$set:{'profile.current.patient':patient_id}});
+        //Meteor.users.update(Meteor.user()._id, {$set:{'profile.current.patient':patient_id}});
+        Meteor.call('newPatient', Meteor.user(), patient_id);
       }
       // this adds the current patient being treated to the user profile.
       Meteor.setTimeout(function () {
@@ -209,12 +238,16 @@ var setStatus = function (patient_id) {
           abnormal = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).abnormal
           results.push({'test':   tests[i], 'result':result, 'abnormal': abnormal})
         }
-        Meteor.users.update(Meteor.user()._id, 
-          {$set:{
-            'profile.current.investigations':tests,
-            'profile.current.results':results
-          }
-        });
+        // Meteor.users.update(Meteor.user()._id, 
+        //   {$set:{
+        //     'profile.current.investigations':tests,
+        //     'profile.current.results':results
+        //   }
+        // });
+        Meteor.call('addCurrentTestsAndResults',
+          Meteor.user(),
+          tests,
+          results)
         //allow to progress in the game
         stage++
         setStage(stage)
@@ -261,12 +294,11 @@ Template.resultsPanel.events({
         Session.set("wrongStage", true)
         stage++
         setStage(stage)
+        Meteor.call('addCurrentDiagnosis',
+          Meteor.user(),
+          diag  )
         Meteor.users.update(Meteor.user()._id, 
           {
-            // commented out for testing purpose for now.
-            // $push:{
-            //   'profile.current.diagnoses':diag,
-            // },
             $inc:{
               'profile.current.status':1
             }});  
@@ -289,6 +321,44 @@ Template.resultsPanel.events({
 
   })
 
+  Template.epiloguePanel.events({
+    'click a.answer':function(){
+      //checks if epilogue answer is the right one, if not goes to endscreen.
+      if (this.next) {
+        epPhase ++
+        Meteor.users.update(Meteor.user()._id, 
+          {
+            $inc:{
+              'profile.current.epilogue':1
+            }}); 
+        // success for epilogue: go to finalStage with bonus
+        if (epPhase + 1 > Patients.findOne({name:"Judy"}).case[0].epilogue.length) {
+          setStage(9);
+          Meteor.users.update(Meteor.user()._id, 
+          {
+            $set:{
+              'profile.current.epilogue':0,
+              'profile.current.bonus': true,
+              'profile.current.message': this.message,
+            }});
+          Meteor.call('addXPAndReputation',
+            Meteor.user(),
+            Patients.findOne({name:"Judy"}).case[0].bonus.xp,
+            Patients.findOne({name:"Judy"}).case[0].bonus.reputation)
+        }
+        // failure for epilogue go to finalStage without bonus but with message
+      } else {
+        Meteor.users.update(Meteor.user()._id, 
+        {
+          $set:{
+            'profile.current.epilogue':0,
+            'profile.current.message': this.message,
+          }}); 
+        setStage(9)
+      }
+    }
+  })
+
 
   Template.newPatient.rendered = function () {
     $('a[rel=tooltip]').tooltip();
@@ -305,7 +375,6 @@ Template.resultsPanel.events({
     'click label.checkbox' : function () {
       if ($(":checkbox:checked").length >2){
         Session.set('error', "I said ONLY TWO tests. Please?");
-        console.log("hello")
       } else {
         Session.set('error', null)
       }
@@ -383,6 +452,9 @@ Accounts.onCreateUser(function(options, user) {
           results:[],
           diagnoses:[],
           status:0,
+          epilogue:0,
+          message:null,
+          bonus:false,
         },
         archive:[],
         }
@@ -457,7 +529,7 @@ Accounts.onCreateUser(function(options, user) {
             {
               answer:"Yes",
               next:true,
-              message:""
+              message:"Some STDs, in this case gonorrhea, can lead to symptoms in the joints. Always ask about sexual history when someone has an acute joint pain. Here are some bonus reputation points for a job well jobbed! Before discharging Judy, you give her the address of a good marriage counselor."
             },
             {
               answer:"No",
@@ -468,11 +540,15 @@ Accounts.onCreateUser(function(options, user) {
 
           ],
           success:"Congratulations, Judy feels much better!",
+          win:{
+            reputation:70,
+            xp:70,
+          },
           bonus:{ 
-            message:"Some STDs, in this case gonorrhea, can lead to symptoms in the joints. Always ask about sexual history when someone has an acute joint pain. Here are some bonus reputation points for a job well jobbed! Before discharging Judy, you give her the address of a good marriage counselor.",
+            message:"",
             reputation:100,
             xp:20,
-          }
+          },
         }]
       });
 

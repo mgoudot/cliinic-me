@@ -108,7 +108,10 @@
 		<p>{{> statusPanel}}</p>
 	{{/if}}
 	{{#if session 'epilogueStage'}}
-		<p>{{> epiloguePanel}}
+		<p>{{> epiloguePanel}}</p>
+	{{/if}}
+	{{#if session 'finalStage'}}
+		<p>{{> finalPanel}}</p>
 	{{/if}}
 
 </template>
@@ -164,13 +167,14 @@
 </template>
 
 <template name="statusPanel">
+<!-- 	This is hardcore spaghetti code for now. Could use some cleaning up. -->
 	{{#unless session 'successStage'}}
 		<p>{{session 'narratorStatus'}}</p>
 		{{#if session 'nurseStatus'}}
-			<p>Nurse: &laquo;{{session 'nurseStatus'}}&raquo;</p>
+			<p><em>Nurse:</em> &laquo;{{session 'nurseStatus'}}&raquo;</p>
 		{{/if}}
 		{{#if session 'patientStatus'}}
-			<p>{{patient.name}}: &laquo;{{session 'patientStatus'}}&raquo;</p>
+			<p><em>{{patient.name}}:</em> &laquo;{{session 'patientStatus'}}&raquo;</p>
 		{{/if}}
 		{{#unless session 'wrongStage'}}
 			<a class="btn btn-primary next">Okay, {{patient.name}}.</a>
@@ -184,12 +188,12 @@
 		{{#if session 'wrongStage'}}
 			<p>{{session 'narratorStatus'}}</p>
 			{{#if session 'nurseStatus'}}
-				<p>Nurse: &laquo;{{session 'nurseStatus'}}&raquo;</p>
+				<p><em>Nurse:</em> &laquo;{{session 'nurseStatus'}}&raquo;</p>
 			{{/if}}
 			{{#if session 'patientStatus'}}
-				<p>{{patient.name}}: &laquo;{{session 'patientStatus'}}&raquo;</p>
+				<p><em>{{patient.name}}:</em> &laquo;{{session 'patientStatus'}}&raquo;</p>
 			{{/if}}
-			<a class="btn btn-primary retry">No that's not it...</a>
+			<a class="btn btn-primary retry">Hmmm, well...</a>
 		{{/if}}
 	{{/if}}
 </template>
@@ -237,18 +241,24 @@
     </label>    
 </template>
 
-<template name="successPanel">
+<template name="finalPanel">
+	<!-- is the unless still necessary? -->
 	{{#unless session 'wrongStage'}}
 		<p>{{patient.case.0.success}}</p>
+		<p>{{currentUser.profile.current.message}}</p>
+		<p><b>Reputation earned :</b> {{patient.case.0.win.reputation}}. <b>XP earned :</b> {{patient.case.0.win.xp}}</p>
+		{{#if currentUser.profile.current.bonus}}
+			<p><b>Bonus reputation earned</b>: {{patient.case.0.bonus.reputation}}. <b>Bonus xp earned</b>: {{patient.case.0.bonus.xp}}</p>
+		{{/if}}
 		<a class="btn btn-primary next">Yay!</a>
 	{{/unless}}
 </template>
 
 <template name="epiloguePanel">
-	<p>{{epilogue.0.question}}</p>
-	{{#each epilogue.0.answers}}
-		<a class="btn btn-primary" >{{epilogue.0.answer}}</a>
-	{{/each}}
+		<p>{{epilogue.question}}</p>
+		{{#each epilogue.answers}}
+			<a class="btn btn-primary answer" >{{answer}}</a>
+		{{/each}}
 </template>
 
 
