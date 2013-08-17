@@ -160,7 +160,7 @@ Handlebars.registerHelper('epilogue', function(input){
       }
     };
 
-  // think about that one good
+  //
   Template.epiloguePanel.epilogue = function() {
     epPhase = Meteor.user().profile.current.epilogue
     ep = Patients.findOne({name:"Judy"}).case[0].epilogue[epPhase]
@@ -357,6 +357,7 @@ Template.resultsPanel.events({
           }}); 
         setStage(9)
         Meteor.call("pushCurrentToArchive", Meteor.user())
+        Meteor.call("wipeCurrent", Meteor.user())
       }
     }
   })
@@ -399,14 +400,16 @@ if (Meteor.isServer) {
 //---------------- METHODS ----------------
 
 //some functions are fiddly, but they should work fine now.
-//
 
 Meteor.methods({
+
+  // saves the current patient treated
   newPatient : function(user, patient_id) {
     Meteor.users.update(user, 
       {$set:{'profile.current.patient':patient_id}})
   },
 
+  // saves all the tests and results to the profile.current data buffer
   addCurrentTestsAndResults : function(user, tests, results) {
     Meteor.users.update(user, 
       {$set:{
@@ -415,6 +418,7 @@ Meteor.methods({
       }});
   },
 
+  // saves all the diagnoses to the profile.current data buffer
   addCurrentDiagnosis : function (user, diag) {
     Meteor.users.update(user,
       {$set:{
@@ -422,6 +426,7 @@ Meteor.methods({
       }})
   },
 
+  // does what it says
   addXPAndReputation : function (user, xp, rep) {
     Meteor.users.update(user,
       {$inc:{
@@ -429,19 +434,32 @@ Meteor.methods({
         'profile.reputation': rep,
       }});
     if (xp>0) {
-      
+
     }
   },
 
+  // pushes what the user did in this case in the archive array.
   pushCurrentToArchive : function (user) {
     Meteor.users.update(user,
       {$push:{
-        'profile.current.archive': user.profile.current
+        'profile.archive': user.profile.current
       }});
   },
 
-  sayHi : function() {
-    console.log("hi")
+  // resets the current data buffer for next case
+  wipeCurrent : function(user) {
+    Meteor.users.update(user,
+      {$set:{
+        'profile.current.patient':null,
+        'profile.current.case':null,
+        'profile.current.investigations':[],
+        'profile.current.results':[],
+        'profile.current.diagnoses':[],
+        'profile.current.status':0,
+        'profile.current.epilogue':0,
+        'profile.current.message':null,
+        'profile.current.bonus':false,
+      }})    
   }
 
 })
