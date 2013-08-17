@@ -47,8 +47,8 @@
 			    	  <div class="navbar-inner">
 		    			<ul class="nav">
 			      			<li><a href="#">Vancouver</a></li>
-			      			<li><a href="#">Rep : {{currentUser.profile.reputation}}</a></li>
-			      			<li><a href="#">XP : {{currentUser.profile.xp}}</a></li>
+			      			<li><a class="repDisplay" href="#">Rep : {{currentUser.profile.reputation}}</a></li>
+			      			<li><a class="xpDisplay" href="#">XP : {{currentUser.profile.xp}}</a></li>
 		    				</ul>
 			        </div>
 
@@ -241,18 +241,6 @@
     </label>    
 </template>
 
-<template name="finalPanel">
-	<!-- is the unless still necessary? -->
-	{{#unless session 'wrongStage'}}
-		<p>{{patient.case.0.success}}</p>
-		<p>{{currentUser.profile.current.message}}</p>
-		<p><b>Reputation earned :</b> {{patient.case.0.win.reputation}}. <b>XP earned :</b> {{patient.case.0.win.xp}}</p>
-		{{#if currentUser.profile.current.bonus}}
-			<p><b>Bonus reputation earned</b>: {{patient.case.0.bonus.reputation}}. <b>Bonus xp earned</b>: {{patient.case.0.bonus.xp}}</p>
-		{{/if}}
-		<a class="btn btn-primary next">Yay!</a>
-	{{/unless}}
-</template>
 
 <template name="epiloguePanel">
 		<p>{{epilogue.question}}</p>
@@ -261,6 +249,20 @@
 		{{/each}}
 </template>
 
+
+<template name="finalPanel">
+	<!-- is the unless still necessary? -->
+	{{#unless session 'wrongStage'}}
+		<p>{{patient.case.0.success}}</p>
+		<p>{{currentUser.profile.current.message}}</p>
+		<p><b>Reputation earned :</b> {{patient.case.0.win.reputation}}. <b>XP earned :</b> {{patient.case.0.win.xp}}</p>
+		{{#if currentUser.profile.current.bonus}}
+			<p><b>Bonus unlocked!</b></p>
+			<p><b>Reputation earned:</b> {{patient.case.0.bonus.reputation}}. <b>Bonus xp earned</b>: {{patient.case.0.bonus.xp}}</p>
+		{{/if}}
+		<a class="btn btn-primary next">Yay!</a>
+	{{/unless}}
+</template>
 
 <template name="results"> 
 	{{#if currentUser}}	

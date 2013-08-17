@@ -265,6 +265,7 @@ Handlebars.registerHelper('epilogue', function(input){
 
 Template.resultsPanel.events({
   //This is to give a hint: where to click after the results
+  // Should be systematized 
   'click a.next' : function(){
     Meteor.setTimeout(function(){
           $('a[class="testPatient bed retryTest"]').tooltip('show');
@@ -355,6 +356,7 @@ Template.resultsPanel.events({
             'profile.current.message': this.message,
           }}); 
         setStage(9)
+        Meteor.call("pushCurrentToArchive", Meteor.user())
       }
     }
   })
@@ -396,7 +398,8 @@ if (Meteor.isServer) {
 
 //---------------- METHODS ----------------
 
-//some functions are deprecated, don't know why they wouldn't work properly.
+//some functions are fiddly, but they should work fine now.
+//
 
 Meteor.methods({
   newPatient : function(user, patient_id) {
@@ -408,30 +411,37 @@ Meteor.methods({
     Meteor.users.update(user, 
       {$set:{
         'profile.current.investigations':tests,
-        'profile.current.results':results
+        'profile.current.results':results,
       }});
-    console.log(user)
   },
 
   addCurrentDiagnosis : function (user, diag) {
     Meteor.users.update(user,
       {$set:{
         'profile.current.diagnoses' : diag
-      }}
-      )
+      }})
   },
 
   addXPAndReputation : function (user, xp, rep) {
-    console.log(xp + ' ' + rep)
     Meteor.users.update(user,
       {$inc:{
-        'profile.xp': xp
-      },
-      $inc:{
-        'profile.reputation': rep
-      }
+        'profile.xp': xp,
+        'profile.reputation': rep,
+      }});
+    if (xp>0) {
+      
     }
-      )
+  },
+
+  pushCurrentToArchive : function (user) {
+    Meteor.users.update(user,
+      {$push:{
+        'profile.current.archive': user.profile.current
+      }});
+  },
+
+  sayHi : function() {
+    console.log("hi")
   }
 
 })
