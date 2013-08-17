@@ -79,15 +79,6 @@ setStatus = function (patient_id) {
   Session.set('patientStatus', st.patient)
   };
 
-// setEpilogueStage = function (patient_id, i) {
-//   e = Meteor.user().profile.current.epilogue
-//   p = Patients.findOne({id:patient_id})
-//   c = p.case[0]
-//   ep = c.epilogue[e]
-
-//   Session.set('epQuestion', ep.question)
-// };
-
 
 
   //---------------- HELPERS ----------------
@@ -106,64 +97,61 @@ Handlebars.registerHelper('epilogue', function(input){
   //---------------- TEMPLATES ----------------
 
   // Template filling like cream, lots of dejudifying to do
-  // To dejudify: store patient inside a current.patient field in user
-  // & always request it.
 
   Template.testsPanel.investigations = function () {
-    if (Patients.findOne({name:"Judy"})) {
-      return Investigations.find({patient_id:"judy"}).fetch()
+    if (Patients.findOne({id:Meteor.user().profile.current.patient})) {
+      return Investigations.find({patient_id:Meteor.user().profile.current.patient}).fetch()
     }
   };
 
   Template.diagnosesPanel.diagnoses = function () {
-    if (Patients.findOne({name:"Judy"})) {
-      return Diagnoses.find({patient_id:"judy"}).fetch()
+    if (Patients.findOne({id:Meteor.user().profile.current.patient})) {
+      return Diagnoses.find({patient_id:Meteor.user().profile.current.patient}).fetch()
     }
   }
 
+  // newPatient is what needs to be dejudyfied last, for patient selection
   Template.newPatient.patient = function () {
     if (Patients.findOne({name:"Judy"})) {
       return Patients.findOne({name:"Judy"})
     }
   };
 
-  Template.results.results = function() {
-  };
 
   Template.statusPanel.patient = function() {
-    if (Patients.findOne({name:"Judy"})) {
-      return Patients.findOne({name:"Judy"})
+    if (Patients.findOne({id:Meteor.user().profile.current.patient})) {
+      return Patients.findOne({id:Meteor.user().profile.current.patient})
     }
   };
 
   Template.testsPanel.patient = function() {
-  if (Patients.findOne({name:"Judy"})) {
-    return Patients.findOne({name:"Judy"})
+  if (Patients.findOne({id:Meteor.user().profile.current.patient})) {
+    return Patients.findOne({id:Meteor.user().profile.current.patient})
     }
   };
 
   Template.resultsPanel.patient = function() {
-  if (Patients.findOne({name:"Judy"})) {
-    return Patients.findOne({name:"Judy"})
+  if (Patients.findOne({id:Meteor.user().profile.current.patient})) {
+    return Patients.findOne({id:Meteor.user().profile.current.patient})
     }
   };
 
   Template.diagnosesPanel.patient = function() {
-  if (Patients.findOne({name:"Judy"})) {
-    return Patients.findOne({name:"Judy"})
+  if (Patients.findOne({id:Meteor.user().profile.current.patient})) {
+    return Patients.findOne({id:Meteor.user().profile.current.patient})
       }
     };
 
   Template.finalPanel.patient = function() {
-  if (Patients.findOne({name:"Judy"})) {
-    return Patients.findOne({name:"Judy"})
+  if (Patients.findOne({id:Meteor.user().profile.current.patient})) {
+    return Patients.findOne({id:Meteor.user().profile.current.patient})
       }
     };
 
   //
   Template.epiloguePanel.epilogue = function() {
     epPhase = Meteor.user().profile.current.epilogue
-    ep = Patients.findOne({name:"Judy"}).case[0].epilogue[epPhase]
+    ep = Patients.findOne({id:Meteor.user().profile.current.patient}).case[0].epilogue[epPhase]
     return ep
   }
 
@@ -172,17 +160,20 @@ Handlebars.registerHelper('epilogue', function(input){
 
   Template.newPatient.events({
     'click a.newPatient' : function () {
-      patient_id = $('a[class="newPatient arrival"]').attr('id')
-      if (!Meteor.user().profile.current.patient) {
-        //Meteor.users.update(Meteor.user()._id, {$set:{'profile.current.patient':patient_id}});
-        Meteor.call('newPatient', Meteor.user(), patient_id);
-      }
       // this adds the current patient being treated to the user profile.
+
+      patient_id = $('a[class="newPatient arrival"]').attr('id')
+      case_id = $('a[class="newPatient arrival"]').attr('case_id')
+      console.log(case_id)
+      if (!Meteor.user().profile.current.patient) {
+
+        Meteor.call('newPatient', Meteor.user(), patient_id, case_id);
+      }
       Meteor.setTimeout(function () {
       stage = stage + 1;
       setStage(stage);
       }, 100);
-      //temporary (dev) fix to reset the player statuss
+      //temporary (dev) fix to reset the player status
       Meteor.users.update(Meteor.user()._id, {$set:{'profile.current.status':0}})
       setStatus(patient_id);
     },
@@ -229,13 +220,13 @@ Handlebars.registerHelper('epilogue', function(input){
       $(":checkbox:checked").each(function() { 
         tests.push(($(this).attr('id')));
       });
-      //might need to dejudify this.
+      //Commpletely DEJUDYFIED!!!!
         if (tests.length < 3) {
         //finding out if the tests are the good ones
         results = []
         for (var i = 0; i < tests.length; i++ ) {
-          result = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).result
-          abnormal = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).abnormal
+          result = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: Meteor.user().profile.current.patient }, { case_id: Meteor.user().profile.current.case } ]}).result
+          abnormal = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: Meteor.user().profile.current.patient }, { case_id: Meteor.user().profile.current.case } ]}).abnormal
           results.push({'test':   tests[i], 'result':result, 'abnormal': abnormal})
         }
         // Meteor.users.update(Meteor.user()._id, 
@@ -264,8 +255,8 @@ Handlebars.registerHelper('epilogue', function(input){
 
 
 Template.resultsPanel.events({
-  //This is to give a hint: where to click after the results
-  // Should be systematized 
+  // This is to give a hint: where to click after the results
+  // Should be systematized for every steps
   'click a.next' : function(){
     Meteor.setTimeout(function(){
           $('a[class="testPatient bed retryTest"]').tooltip('show');
@@ -279,7 +270,7 @@ Template.resultsPanel.events({
       diag = $(":radio:checked").attr('id');
        Meteor.users.update(Meteor.user._id,
       {$set:{'profile.current.diagnoses' : diag}})
-      win = Diagnoses.findOne({ $and: [ { name: diag }, { patient_id: "judy" }, { case_id: "judy_first" } ]}).correct
+      win = Diagnoses.findOne({ $and: [ { name: diag }, { patient_id: Meteor.user().profile.current.patient }, { case_id: Meteor.user().profile.current.case } ]}).correct
       if (win) {
         Session.set("wrongStage", false)
         Meteor.users.update(Meteor.user()._id, {
@@ -333,7 +324,7 @@ Template.resultsPanel.events({
               'profile.current.epilogue':1
             }}); 
         // success for epilogue: go to finalStage with bonus
-        if (epPhase + 1 > Patients.findOne({name:"Judy"}).case[0].epilogue.length) {
+        if (epPhase + 1 > Patients.findOne({id: Meteor.user().profile.current.patient }).case[0].epilogue.length) {
           setStage(9);
           Meteor.users.update(Meteor.user()._id, 
           {
@@ -344,8 +335,8 @@ Template.resultsPanel.events({
             }});
           Meteor.call('addXPAndReputation',
             Meteor.user(),
-            Patients.findOne({name:"Judy"}).case[0].bonus.xp,
-            Patients.findOne({name:"Judy"}).case[0].bonus.reputation)
+            Patients.findOne({id: Meteor.user().profile.current.patient }).case[0].bonus.xp,
+            Patients.findOne({id: Meteor.user().profile.current.patient }).case[0].bonus.reputation)
         }
         // failure for epilogue go to finalStage without bonus but with message
       } else {
@@ -404,9 +395,12 @@ if (Meteor.isServer) {
 Meteor.methods({
 
   // saves the current patient treated
-  newPatient : function(user, patient_id) {
+  newPatient : function(user, patient_id, case_id) {
     Meteor.users.update(user, 
-      {$set:{'profile.current.patient':patient_id}})
+      {$set:{
+        'profile.current.patient':patient_id,
+        'profile.current.case':case_id,
+        }})
   },
 
   // saves all the tests and results to the profile.current data buffer
@@ -459,7 +453,7 @@ Meteor.methods({
         'profile.current.epilogue':0,
         'profile.current.message':null,
         'profile.current.bonus':false,
-      }})    
+      }})     
   }
 
 })

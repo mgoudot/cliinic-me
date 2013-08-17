@@ -122,7 +122,7 @@
 
 	{{#if patient}}
 	  	{{#if session 'arrivalStage'}} 
-		<a class="newPatient arrival" id="{{patient.id}}" href="#" rel="tooltip" data-placement="right" title="Greet {{patient.name}}"><img class="arrival" src='/{{patient.name}}.png'></a>
+		<a class="newPatient arrival" id="{{patient.id}}" case_id="{{patient.case.0.name}}" href="#" rel="tooltip" data-placement="right" title="Greet {{patient.name}}"><img class="arrival" src='/{{patient.name}}.png'></a>
 		{{/if}}
 
 		{{#if session 'greetingStage'}}
