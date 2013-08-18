@@ -160,6 +160,9 @@
 			{{/unless}}
 			{{#if session 'wrongStage'}}
 				<a class='bed'><img class="bed" src='/{{patient.name}}Lost.png'></a>
+				<!-- not sure yet what to do with that.
+				<a class='moa'><img class="moa" src='/moaLost.png'></a> 
+				-->
 			{{/if}}
 		{{/if}}
 
@@ -253,12 +256,11 @@
 <template name="finalPanel">
 	<!-- is the unless still necessary? -->
 	{{#unless session 'wrongStage'}}
-		<p>{{patient.case.0.success}}</p>
 		<p>{{currentUser.profile.current.message}}</p>
 		<p><b>Reputation earned :</b> {{patient.case.0.win.reputation}}. <b>XP earned :</b> {{patient.case.0.win.xp}}</p>
 		{{#if currentUser.profile.current.bonus}}
 			<p><b>Bonus unlocked!</b></p>
-			<p><b>Reputation earned:</b> {{patient.case.0.bonus.reputation}}. <b>Bonus xp earned</b>: {{patient.case.0.bonus.xp}}</p>
+			<p><b>Reputation earned:</b> {{patient.case.0.bonus.reputation}}. <b>XP earned</b>: {{patient.case.0.bonus.xp}}</p>
 		{{/if}}
 		<a class="btn btn-primary next">Yay!</a>
 	{{/unless}}

@@ -52,6 +52,7 @@ Session.set('narratorStatus', null)
 Session.set('epilogue', null)
 
 
+// Then "engine" function, allowing to navigate between stages.
 setStage = function (i) {
   stageArray = ['arrivalStage',
     'greetingStage', 
@@ -112,6 +113,11 @@ Handlebars.registerHelper('epilogue', function(input){
 
   // newPatient is what needs to be dejudyfied last, for patient selection
   Template.newPatient.patient = function () {
+    // HOW TO DISPLAY PATIENTS
+    // for each patient in the Patiens DB
+    // search patient's case name inside the player's profile.current.archive 
+    // if false add patient to patient_list
+    // return patient list
     if (Patients.findOne({name:"Judy"})) {
       return Patients.findOne({name:"Judy"})
     }
@@ -164,7 +170,6 @@ Handlebars.registerHelper('epilogue', function(input){
 
       patient_id = $('a[class="newPatient arrival"]').attr('id')
       case_id = $('a[class="newPatient arrival"]').attr('case_id')
-      console.log(case_id)
       if (!Meteor.user().profile.current.patient) {
 
         Meteor.call('newPatient', Meteor.user(), patient_id, case_id);
@@ -174,6 +179,7 @@ Handlebars.registerHelper('epilogue', function(input){
       setStage(stage);
       }, 100);
       //temporary (dev) fix to reset the player status
+      // this has been temporary for more than 3 months now...
       Meteor.users.update(Meteor.user()._id, {$set:{'profile.current.status':0}})
       setStatus(patient_id);
     },
@@ -229,16 +235,12 @@ Handlebars.registerHelper('epilogue', function(input){
           abnormal = Investigations.findOne({ $and: [ { name: tests[i] }, { patient_id: Meteor.user().profile.current.patient }, { case_id: Meteor.user().profile.current.case } ]}).abnormal
           results.push({'test':   tests[i], 'result':result, 'abnormal': abnormal})
         }
-        // Meteor.users.update(Meteor.user()._id, 
-        //   {$set:{
-        //     'profile.current.investigations':tests,
-        //     'profile.current.results':results
-        //   }
-        // });
+
         Meteor.call('addCurrentTestsAndResults',
           Meteor.user(),
           tests,
           results)
+
         //allow to progress in the game
         stage++
         setStage(stage)
@@ -293,7 +295,8 @@ Template.resultsPanel.events({
           {
             $inc:{
               'profile.current.status':1
-            }});  
+            }});
+        // what is that for?
         setStatus(Meteor.user().profile.current.patient);
       }
     }
@@ -346,10 +349,19 @@ Template.resultsPanel.events({
             'profile.current.epilogue':0,
             'profile.current.message': this.message,
           }}); 
+        Meteor.call("pushCurrentToArchive", Meteor.user());
         setStage(9)
-        Meteor.call("pushCurrentToArchive", Meteor.user())
-        Meteor.call("wipeCurrent", Meteor.user())
       }
+    }
+  })
+
+  Template.finalPanel.events({
+    'click a.next':function(){
+      //final
+      console.log("hi")
+      Meteor.call("wipeCurrent", Meteor.user())
+      stage = 0
+      setStage(stage)
     }
   })
 
@@ -390,7 +402,7 @@ if (Meteor.isServer) {
 
 //---------------- METHODS ----------------
 
-//some functions are fiddly, but they should work fine now.
+//some methods are fiddly, but they should work fine now.
 
 Meteor.methods({
 
@@ -403,7 +415,7 @@ Meteor.methods({
         }})
   },
 
-  // saves all the tests and results to the profile.current data buffer
+  // saves all the tests and results to the user profile.current buffer
   addCurrentTestsAndResults : function(user, tests, results) {
     Meteor.users.update(user, 
       {$set:{
@@ -412,7 +424,7 @@ Meteor.methods({
       }});
   },
 
-  // saves all the diagnoses to the profile.current data buffer
+  // saves all the diagnoses to the profile.current buffer
   addCurrentDiagnosis : function (user, diag) {
     Meteor.users.update(user,
       {$set:{
@@ -432,7 +444,7 @@ Meteor.methods({
     }
   },
 
-  // pushes what the user did in this case in the archive array.
+  // For analytics: pushes what the user did in this case in the archive array.
   pushCurrentToArchive : function (user) {
     Meteor.users.update(user,
       {$push:{
